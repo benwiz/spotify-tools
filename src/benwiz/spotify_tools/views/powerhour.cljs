@@ -72,62 +72,80 @@
         loading? (rf/subscribe [::subs/db :transfer-playback #(= % :loading)])
         devices  (rf/subscribe [::subs/db :spotify/devices device-choices])
         selected (rf/subscribe [::subs/db :spotify/devices selected-device])]
-    [re-com/single-dropdown
-     :src         (at)
-     :style       {:align-self "center"}
-     :choices     @devices
-     :model       (:id @selected)
-     :title?      true
-     :disabled?   @loading?
-     :placeholder "Choose a device"
-     :width       "300px"
-     :max-height  "400px"
-     :filter-box? false
-     :repeat-change? true
-     :on-drop     #(rf/dispatch (spotify/get-devices @token)) ;; shouldn't be necessary since I have an interval on it, but can't hurt
-     :on-change   (fn [id]
-                    (rf/dispatch (spotify/transfer-playback! @token id)))]))
+    [re-com/v-box
+     :src (at)
+     :children
+     [[re-com/label
+       :src (at)
+       :label "Device:"]
+      [re-com/single-dropdown
+       :src         (at)
+       :style       {:align-self "center"}
+       :choices     @devices
+       :model       (:id @selected)
+       :title?      true
+       :disabled?   @loading?
+       :placeholder "Choose a device"
+       :width       "300px"
+       :max-height  "400px"
+       :filter-box? false
+       :repeat-change? true
+       :on-drop     #(rf/dispatch (spotify/get-devices @token)) ;; shouldn't be necessary since I have an interval on it, but can't hurt
+       :on-change   (fn [id]
+                      (rf/dispatch (spotify/transfer-playback! @token id)))]]]))
 
 (defn interval-select []
   (let [interval (rf/subscribe [::subs/db :powerhour/interval])]
-    [re-com/single-dropdown
-     :src         (at)
-     :style       {:align-self "center"}
-     :choices     [{:label "10 seconds" :value 10}
-                   {:label "30 seconds" :value 30}
-                   {:label "60 seconds" :value 60}
-                   {:label "90 seconds" :value 90}
-                   {:label "120 seconds" :value 120}]
-     :model       @interval
-     :id-fn       :value
-     :title?      true
-     :placeholder "Choose an interval"
-     :width       "300px"
-     :max-height  "400px"
-     :filter-box? false
-     :repeat-change? true
-     :on-change   (fn [value]
-                    (rf/dispatch [::events/edit-db #(assoc % :powerhour/interval value)]))]))
+    [re-com/v-box
+     :src (at)
+     :children
+     [[re-com/label
+       :src (at)
+       :label "Interval:"]
+      [re-com/single-dropdown
+       :src         (at)
+       :style       {:align-self "center"}
+       :choices     [{:label "10 seconds" :value 10}
+                     {:label "30 seconds" :value 30}
+                     {:label "60 seconds" :value 60}
+                     {:label "90 seconds" :value 90}
+                     {:label "120 seconds" :value 120}]
+       :model       @interval
+       :id-fn       :value
+       :title?      true
+       :placeholder "Choose an interval"
+       :width       "300px"
+       :max-height  "400px"
+       :filter-box? false
+       :repeat-change? true
+       :on-change   (fn [value]
+                      (rf/dispatch [::events/edit-db #(assoc % :powerhour/interval value)]))]]]))
 
 (defn duration-select []
   (let [duration (rf/subscribe [::subs/db :powerhour/duration])]
-    [re-com/single-dropdown
-     :src         (at)
-     :style       {:align-self "center"}
-     :choices     [{:label "15 minutes" :value 15}
-                   {:label "30 minutes" :value 30}
-                   {:label "60 minutes" :value 60}
-                   {:label "90 minutes" :value 90}]
-     :model       @duration
-     :id-fn       :value
-     :title?      true
-     :placeholder "Choose a duration"
-     :width       "300px"
-     :max-height  "400px"
-     :filter-box? false
-     :repeat-change? true
-     :on-change   (fn [value]
-                    (rf/dispatch [::events/edit-db #(assoc % :powerhour/duration value)]))]))
+    [re-com/v-box
+     :src (at)
+     :children
+     [[re-com/label
+       :src (at)
+       :label "Duration:"]
+      [re-com/single-dropdown
+       :src         (at)
+       :style       {:align-self "center"}
+       :choices     [{:label "15 minutes" :value 15}
+                     {:label "30 minutes" :value 30}
+                     {:label "60 minutes" :value 60}
+                     {:label "90 minutes" :value 90}]
+       :model       @duration
+       :id-fn       :value
+       :title?      true
+       :placeholder "Choose a duration"
+       :width       "300px"
+       :max-height  "400px"
+       :filter-box? false
+       :repeat-change? true
+       :on-change   (fn [value]
+                      (rf/dispatch [::events/edit-db #(assoc % :powerhour/duration value)]))]]]))
 
 (defn album-cover []
   (let [spotify-playing? (rf/subscribe [::subs/db :spotify/playback-state :is_playing])
@@ -296,10 +314,14 @@
        [device-select]
        [interval-select]
        [duration-select]
+
+       ;; TODO use re-usable card originally designed in Analysis that I am intending on abstracting
        [album-cover]
+       [links/current-track]
        [track-title]
        [album-title]
        [artist-name]
+
        [timer]
        [play-button]
        [pause-button]
@@ -309,7 +331,7 @@
   (let [token    (rf/subscribe [::subs/db :spotify/token])
         interval (rf/subscribe [::subs/db :powerhour/interval])]
     [:> Stack {:spacing 2}
-     [c/header {:title    "Power Hour"
+     [c/header {:title    "Interval Timer" ;; "Power Hour"
                 :subtitle (str "Change the song every " @interval " seconds")}]
      (if @token
        [:> Card {:variant "outlined"

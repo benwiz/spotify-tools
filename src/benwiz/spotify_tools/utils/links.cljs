@@ -16,9 +16,10 @@
    "Back"])
 
 (defn home []
-  [:> Chip {:slotProps      {:action {:component "a" :href "https://benwiz.com"
+  [:> Chip {:color          "primary"
+            :slotProps      {:action {:component "a" :href "https://benwiz.com"
                                       ;; only because routing is weird and won't open smoothly in same tab
-                                      :target "_blank"}}
+                                      #_#_:target "_blank"}}
             :startDecorator (r/as-element [:> HomeIcon {:sx {:color "black"}}])}
    "Home"])
 
@@ -48,8 +49,6 @@
      (when (not= :home @active-panel)
        [:> Grid nil
         [back]])
-     [:> Grid nil
-      [home]]
      (if (= :wwoz @active-panel)
        [:> Grid nil
         [wwoz-github]]
@@ -60,3 +59,16 @@
      ;; TODO settings
      ;; TODO about
      ]))
+
+(defn spotify-track
+  [id]
+  [:> Chip {:slotProps      {:action {:component "a" :href (str "https://open.spotify.com/track/" id)}}
+            :startDecorator (r/as-element [:img {:src   "assets/Spotify_Icon_RGB_Black.png"
+                                                 :width 20}])}
+   "Open in Spotify"])
+
+(defn current-track
+  []
+  (let [currently-playing-id (rf/subscribe [::subs/db :spotify/playback-state #(-> % :item :id)])]
+    (when @currently-playing-id
+      [spotify-track @currently-playing-id])))

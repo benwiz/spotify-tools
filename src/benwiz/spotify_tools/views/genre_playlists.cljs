@@ -3,6 +3,7 @@
    ["@mui/icons-material/Clear" :default ClearIcon]
    ["@mui/icons-material/Delete" :default DeleteIcon]
    ["@mui/icons-material/FavoriteBorder" :default FavoriteBorderIcon]
+   ["@mui/icons-material/Link" :default LinkIcon]
    ["@mui/icons-material/Refresh" :default RefreshIcon]
    ["@mui/icons-material/Search" :default SearchIcon]
    ["@mui/icons-material/Sync" :default SyncIcon]
@@ -10,20 +11,18 @@
    ["@mui/joy/Card" :default Card]
    ["@mui/joy/CardContent" :default CardContent]
    ["@mui/joy/CircularProgress" :default CircularProgress]
-   ["@mui/joy/Divider" :default Divider]
    ["@mui/joy/IconButton" :default IconButton]
    ["@mui/joy/Input" :default Input]
    ["@mui/joy/LinearProgress" :default LinearProgress]
+   ["@mui/joy/Link" :default Link]
    ["@mui/joy/List" :default List]
    ["@mui/joy/ListDivider" :default ListDivider]
    ["@mui/joy/ListItem" :default ListItem]
    ["@mui/joy/Stack" :default Stack]
    ["@mui/joy/Typography" :default Typography]
-   ["@mui/material/Icon" :default Icon]
    [benwiz.spotify-tools.events :as events]
    [benwiz.spotify-tools.subs :as subs]
    [benwiz.spotify-tools.utils.components :as c]
-   [benwiz.spotify-tools.utils.links :as links]
    [benwiz.spotify-tools.utils.spotify :as spotify]
    [clojure.string :as str]
    [re-frame.core :as rf]
@@ -187,6 +186,12 @@
                                   ;; (rf/dispatch [::events/init-panel :playlist])
                                   (spotify/download-user-data @token @debug?))}
      "Reload Spotify Data"]))
+
+(defn link-playlist-button [{:keys [id _genre _name _label _exists? _count _target-count] :as _playlist}]
+  [:> Link {:variant "plain"
+            ;; :target  "_blank"
+            :href    (str "https://open.spotify.com/playlist/" id)}
+   [:> LinkIcon]])
 
 (defn create-playlist-button [{:keys [id genre name _label _exists? _count _target-count] :as _playlist}]
   (let [k            (keyword :create-playlist id)
@@ -353,12 +358,13 @@
               (map (fn [{:keys [label id exists? count target-count] :as playlist}]
                      [:> ListItem {:endAction (r/as-element
                                                 [:> Stack {:direction "row"}
-                                                            (when-not exists?
-                                                              [create-playlist-button playlist])
-                                                            (when (and exists? (< count target-count))
-                                                              [update-playlist-button playlist])
-                                                            (when exists?
-                                                              [delete-playlist-button playlist])])}
+                                                 (if exists?
+                                                   [link-playlist-button playlist]
+                                                   [create-playlist-button playlist])
+                                                 (when (and exists? (< count target-count))
+                                                   [update-playlist-button playlist])
+                                                 (when exists?
+                                                   [delete-playlist-button playlist])])}
                       label]))
               (interpose [:> ListDivider]))
             @genre-playlists))))

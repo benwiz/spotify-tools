@@ -87,6 +87,13 @@
      :fx [[:dispatch [::set-local-store "spotify-token" spotify-token]]
           [:dispatch [::navigate route-handler]]]}))
 
+(rf/reg-event-fx
+  ::delete-spotify-token
+  (fn-traced
+    [{:keys [db]} [_]]
+    {:db (dissoc db :spotify/token)
+     :fx [[:dispatch [::remove-local-store "spotify-token"]]]}))
+
 (rf/reg-event-fx ;; TODO probably should be parameterized with a function or something rather than the panel's identifier
   ::init-panel
   (fn-traced
@@ -102,6 +109,14 @@
                                              :frequency 5000
                                              :events    [(update (spotify/get-devices token) 1 dissoc :key)]}]]
                                 [:dispatch (spotify/get-playback-state token)]
+                                [:dispatch [::interval
+                                            {:id        :playback-state
+                                             :action    :start
+                                             :frequency 1000
+                                             :events    [(update (spotify/get-playback-state token) 1 dissoc :key)]}]]]}))
+        :analysis     (let [devices (:spotify/devices db)]
+                        (when (empty? devices)
+                          {:fx [[:dispatch (spotify/get-playback-state token)]
                                 [:dispatch [::interval
                                             {:id        :playback-state
                                              :action    :start

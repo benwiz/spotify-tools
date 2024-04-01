@@ -16,11 +16,11 @@
    [reagent.core :as r]))
 
 (defn card [{:keys [label panel img-src]}]
-  [:> Card {;;:variant "outlined"
+  >[:> Card { ;; :variant "outlined"
             :sx      {:textDecoration "none"
                       "&:hover"       {:boxShadow "md" :borderColor "neutral.outlinedHoverBorder"
                                        "& .cover" {:background "linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0) 200px), linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0) 300px)"}}
-                      :height         "300px"}
+                      :height         "clamp(100px, 33vw, 300px)"}
             :onClick #(rf/dispatch [::events/navigate panel])}
    [:> CardCover nil
     [:img {:src img-src :loading "lazy"}]]
@@ -35,32 +35,28 @@
 (defn panel []
   [:> Stack {:spacing 2}
    [c/header {:title "Spotify Tools"
-              :subtitle "A collection of tools to augment Spotify"}]
+              #_#_:subtitle "A collection of tools to augment Spotify"}]
    [:> Grid {:container true
              :spacing   2
              :alignSelf "center"}
-    [:> Grid {:item true
-              :xs   12
+    [:> Grid {:xs   12
               :sm   6}
      [card {:label   "Genre Playlists"
             :panel   :playlist
             :img-src "assets/piano.jpg"}]]
-    [:> Grid {:item true
-              :xs   12
+    [:> Grid {:xs   12
               :sm   6}
      [card {:label   "WWOZ Radio"
             :panel   :wwoz
             :img-src "assets/nola.jpg"}]]
-    [:> Grid {:item true
-              :xs   12
+    [:> Grid {:xs   12
               :sm   6}
-     [card {:label   "Analysis"
+     [card {:label   "Key, Tempo, Time Signature"
             :panel   :analysis
             :img-src "assets/sheet-music.jpg"}]]
-    [:> Grid {:item true
-              :xs   12
+    [:> Grid {:xs   12
               :sm   6}
-     [card {:label   "Power Hour"
+     [card {:label   "Interval Timer" ;; "Power Hour"
             :panel   :powerhour
             :img-src "assets/hourglass.jpg"}]]]])
 

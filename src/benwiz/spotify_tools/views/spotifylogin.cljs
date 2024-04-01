@@ -1,7 +1,10 @@
 (ns benwiz.spotify-tools.views.spotifylogin
   (:require
+   ["@mui/joy/Chip" :default Chip]
+   [benwiz.spotify-tools.config :as config]
    [benwiz.spotify-tools.events :as events]
    [benwiz.spotify-tools.routes :as routes]
+   [benwiz.spotify-tools.utils.spotify :as spotify]
    [re-com.core :as re-com :refer [at]]
    [re-frame.core :as rf]))
 
@@ -30,3 +33,15 @@
     [re-com/label
      :src   (at)
      :label "Loading..."]))
+
+(defn login-button []
+  [:> Chip {:color   "neutral"
+            :onClick (fn [_]
+                       (spotify/redirect! config/spotify-client-id))}
+   "Log in with Spotify"])
+
+(defn logout-button []
+  [:> Chip {:color   "neutral"
+            :onClick (fn []
+                       (rf/dispatch [::events/delete-spotify-token]))}
+   "Disconnect from Spotify"])
