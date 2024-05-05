@@ -4,7 +4,7 @@
    [benwiz.spotify-tools.events :as events]
    [benwiz.spotify-tools.routes :as routes]
    [benwiz.spotify-tools.subs :as subs]
-   [benwiz.spotify-tools.utils.spotify :as spotify]
+   [benwiz.spotify-tools.utils.spotify-api :as spotify-api]
    [benwiz.spotify-tools.views :as views]
    [re-frame.core :as rf]
    [reagent.dom :as rdom]
@@ -15,7 +15,7 @@
                 {:id        :timer
                  :action    :start
                  :frequency 1000
-                 :events    [[::events/edit-db update :spotify/token spotify/valid-token!]]}])
+                 :events    [[::events/edit-db update :spotify/token spotify-api/valid-token!]]}])
   (rf/dispatch [::events/register-track
                   {:id           :active-panel-init
                    :subscription [::subs/db :active-panel]

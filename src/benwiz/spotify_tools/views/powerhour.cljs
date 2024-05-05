@@ -10,6 +10,7 @@
    [benwiz.spotify-tools.subs :as subs]
    [benwiz.spotify-tools.utils.components :as c]
    [benwiz.spotify-tools.utils.links :as links]
+   [benwiz.spotify-tools.utils.spotify-api :as spotify-api]
    [benwiz.spotify-tools.utils.spotify :as spotify]
    [clojure.string :as str]
    [re-com.core :as re-com :refer [at]]
@@ -90,9 +91,9 @@
        :max-height  "400px"
        :filter-box? false
        :repeat-change? true
-       :on-drop     #(rf/dispatch (spotify/get-devices @token)) ;; shouldn't be necessary since I have an interval on it, but can't hurt
+       :on-drop     #(rf/dispatch (spotify-api/get-devices @token)) ;; shouldn't be necessary since I have an interval on it, but can't hurt
        :on-change   (fn [id]
-                      (rf/dispatch (spotify/transfer-playback! @token id)))]]]))
+                      (rf/dispatch (spotify-api/transfer-playback! @token id)))]]]))
 
 (defn interval-select []
   (let [interval (rf/subscribe [::subs/db :powerhour/interval])]
@@ -231,11 +232,11 @@
                                   :event-fn     (fn [skip?]
                                                   (when skip?
                                                     (assoc-in
-                                                      (spotify/skip-to-next! @token)
+                                                      (spotify-api/skip-to-next! @token)
                                                       [1 :update-fx]
                                                       (fn [fx _result]
                                                         (into fx
-                                                              [[:dispatch (spotify/seek-to-position! @token 20000)]])))))}]))])))
+                                                              [[:dispatch (spotify-api/seek-to-position! @token 20000)]])))))}]))])))
 
 (defn pause-button []
   (let [token            (rf/subscribe [::subs/db :spotify/token])
@@ -286,18 +287,18 @@
     [:> Button {:sx      {:minWidth    "300px"
                           #_#_:padding "50px"}
                 :onClick (fn [_]
-                           (rf/dispatch (spotify/get-devices @token))
+                           (rf/dispatch (spotify-api/get-devices @token))
                            (rf/dispatch [::events/interval
                                          {:id        :devices
                                           :action    :start
                                           :frequency 5000
-                                          :events    [(update (spotify/get-devices @token) 1 dissoc :key)]}])
-                           (rf/dispatch (spotify/get-playback-state @token))
+                                          :events    [(update (spotify-api/get-devices @token) 1 dissoc :key)]}])
+                           (rf/dispatch (spotify-api/get-playback-state @token))
                            (rf/dispatch [::events/interval
                                          {:id        :playback-state
                                           :action    :start
                                           :frequency 1000
-                                          :events    [(update (spotify/get-playback-state @token) 1 dissoc :key)]}]))}
+                                          :events    [(update (spotify-api/get-playback-state @token) 1 dissoc :key)]}]))}
      "Click to Load App"]))
 
 (defn app []

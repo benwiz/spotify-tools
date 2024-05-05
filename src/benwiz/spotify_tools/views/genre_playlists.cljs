@@ -23,6 +23,7 @@
    [benwiz.spotify-tools.events :as events]
    [benwiz.spotify-tools.subs :as subs]
    [benwiz.spotify-tools.utils.components :as c]
+   [benwiz.spotify-tools.utils.spotify-api :as spotify-api]
    [benwiz.spotify-tools.utils.spotify :as spotify]
    [clojure.string :as str]
    [re-frame.core :as rf]
@@ -184,7 +185,7 @@
                                   (rf/dispatch [::events/edit-db dissoc :spotify/user-tracks])
                                   (rf/dispatch [::events/edit-db dissoc :spotify/user-artists])
                                   ;; (rf/dispatch [::events/init-panel :playlist])
-                                  (spotify/download-user-data @token @debug?))}
+                                  (spotify-api/download-user-data @token @debug?))}
      "Reload Spotify Data"]))
 
 (defn link-playlist-button [{:keys [id _genre _name _label _exists? _count _target-count] :as _playlist}]
@@ -295,7 +296,7 @@
                     :color   "danger"
                     :onClick (fn [_]
                                (rf/dispatch
-                                 (spotify/delete-playlist! @token id)))}
+                                 (spotify-api/delete-playlist! @token id)))}
      (if (or (= @loading :loading) @app-loading?)
        [:> CircularProgress {:color "danger"}]
        [:> DeleteIcon])]))
@@ -318,7 +319,7 @@
                   :onClick        (fn [_]
                                     ;; TODO make sequential not parallel
                                     (doseq [playlist-id @genre-playlist-ids]
-                                      (rf/dispatch (spotify/delete-playlist! @token playlist-id))))}
+                                      (rf/dispatch (spotify-api/delete-playlist! @token playlist-id))))}
        (str "Delete All " @genre-playlists-count " Genre Playlists")])))
 
 (def term (r/atom "")) ;; NOTE weird mix of atom and app-db, probably should use just app-db, I doubt there is much performance loss to app-db vs atom
@@ -383,7 +384,7 @@
         tracks-count      (rf/subscribe [::subs/db :spotify/user-tracks count-items])
         tracks-total      (rf/subscribe [::subs/db :spotify/user-tracks (comp int :total)])
         artists-count     (rf/subscribe [::subs/db :spotify/user-artists count])
-        artists-total     (rf/subscribe [::subs/db :spotify/user-tracks (comp count spotify/track-artists-set)])
+        artists-total     (rf/subscribe [::subs/db :spotify/user-tracks (comp count spotify-api/track-artists-set)])
         playlists-percent (if (zero? @playlists-total)
                             0
                             (min (js/Math.floor (* (/ @playlists-count @playlists-total) 100)) 100))
@@ -415,7 +416,7 @@
     [:> Button {:sx      {:minWidth    "300px"
                           #_#_:padding "50px"}
                 :onClick (fn [_]
-                           (spotify/download-user-data @token @debug?))}
+                           (spotify-api/download-user-data @token @debug?))}
      "Click to Download Spotify Data"]))
 
 (defn app [] ;; note that the entire app lives inside the card, no cards inside the app

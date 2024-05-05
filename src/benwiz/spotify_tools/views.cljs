@@ -11,6 +11,7 @@
    [benwiz.spotify-tools.views.home :as home]
    [benwiz.spotify-tools.views.powerhour :as powerhour]
    [benwiz.spotify-tools.views.settings :as settings]
+   [benwiz.spotify-tools.views.search :as search]
    [benwiz.spotify-tools.views.spotifylogin :as spotifylogin]
    [benwiz.spotify-tools.views.wwoz-to-spotify :as wwoz-to-spotify]
    [cljs-bean.core :refer [->js]]
@@ -32,6 +33,8 @@
 (defmethod routes/panels :wwoz [] [wwoz-to-spotify/panel])
 
 (defmethod routes/panels :powerhour [] [powerhour/panel])
+
+(defmethod routes/panels :search [] [search/panel])
 
 ;; (def spanish-tiles-orange-blue "https://media.istockphoto.com/id/1292585905/vector/oriental-moroccan-tile-seamless-pattern.jpg?s=612x612&w=0&k=20&c=7VzHxcN1yE2Spz1SxJAXlTzGqXK2wEWgpmzKPDcE8Bk=")
 ;; (def spanish-tiles-white-blue "https://media.istockphoto.com/id/1174584974/vector/decorative-seamless-tile-pattern.jpg?s=612x612&w=0&k=20&c=4BxjzozC5fOxZ4_BycqMTaZX1HIBP9lilqoYGMLF8Jw=")

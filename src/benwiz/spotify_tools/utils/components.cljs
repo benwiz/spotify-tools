@@ -10,7 +10,6 @@
 
 (defn header [{:keys [title subtitle]}]
   (let [token (rf/subscribe [::subs/db :spotify/token])]
-    (prn 't token)
     [:> Stack {:spacing    2
                :alignItems "stretch"}
      [:> Stack {:direction      "row"

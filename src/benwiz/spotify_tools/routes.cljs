@@ -18,7 +18,8 @@
           "playlist"     :playlist
           "analysis"     :analysis
           "wwoz"         :wwoz
-          "timer"        :powerhour}]))
+          "timer"        :powerhour
+          "search"       :search}]))
 
 (defn parse ;; using hash routing because it simplifies using "/" or "/spotify/" ;; TODO use normal routes
   [url]

@@ -4,9 +4,10 @@
    [benwiz.spotify-tools.config :as config]
    [benwiz.spotify-tools.events :as events]
    [benwiz.spotify-tools.routes :as routes]
-   [benwiz.spotify-tools.utils.spotify :as spotify]
+   [benwiz.spotify-tools.utils.spotify-api :as spotify-api]
    [re-com.core :as re-com :refer [at]]
-   [re-frame.core :as rf]))
+   [re-frame.core :as rf]
+   [reagent.core :as r]))
 
 (defn panel []
   (let [access-token (-> (subs js/window.location.hash 1)
@@ -35,9 +36,11 @@
      :label "Loading..."]))
 
 (defn login-button []
-  [:> Chip {:color   "neutral"
-            :onClick (fn [_]
-                       (spotify/redirect! config/spotify-client-id))}
+  [:> Chip {:color          "success"
+            :startDecorator (r/as-element [:img {:src   "assets/Spotify_Icon_RGB_Black.png"
+                                                 :width 20}])
+            :onClick        (fn [_]
+                              (spotify-api/redirect! config/spotify-client-id))}
    "Log in with Spotify"])
 
 (defn logout-button []

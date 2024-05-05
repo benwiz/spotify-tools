@@ -58,7 +58,12 @@
               :sm   6}
      [card {:label   "Interval Timer" ;; "Power Hour"
             :panel   :powerhour
-            :img-src "assets/hourglass.jpg"}]]]])
+            :img-src "assets/hourglass.jpg"}]]
+    [:> Grid {:xs   12
+              :sm   6}
+     [card {:label       "Search"
+            :panel       :search
+            #_#_:img-src "assets/hourglass.jpg"}]]]])
 
 ;; At one point I had accordions on the home page instead of fancy buttons
 ;; I liked the idea and maybe it is more functional. But it is prettier

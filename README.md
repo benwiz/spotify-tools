@@ -21,7 +21,14 @@ I think eventually I can include a Java 11 binary for shadow-cljs to use which w
 
 ## To Do
 
+- rename everything
 - permanently show Currently Playing card... generalize the card from Analysis
 - use generalized card in Power Hour
 - cache downloaded data... maybe re-frame offers a way to do this with the db or maybe just have to write to LocalStorage directly
 
+- new app: Search
+  - pull audio-features and store the data in the db and make the new app have a loading bar if it's not ready
+  - fn that takes audio-feature ranges and outputs filtered set of tracks
+  - define audio-features schema in malli
+  - include component in schema annotation that adjusts inputs to filter
+  - I will probably want to optimize the data for searching by storing the 

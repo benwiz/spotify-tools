@@ -3,7 +3,7 @@
    [ajax.core :as ajax]
    [benwiz.spotify-tools.config :as config]
    [benwiz.spotify-tools.db :as db]
-   [benwiz.spotify-tools.utils.spotify :as spotify]
+   [benwiz.spotify-tools.utils.spotify-api :as spotify-api]
    [clojure.edn :as edn]
    [clojure.string :as str]
    [day8.re-frame.http-fx]
@@ -19,7 +19,7 @@
     [_ _]
     (into db/default-db
           {:spotify/token          (when-some [token (edn/read-string (.getItem (.-localStorage ^js js/window) "spotify-token"))]
-                                     (spotify/valid-token! token))
+                                     (spotify-api/valid-token! token))
            #_#_:spotify/user-artists   (edn/read-string (.getItem (.-localStorage ^js js/window) "spotify/user-artists"))
            #_#_:spotify/user-tracks    (when-some [info (edn/read-string (.getItem (.-localStorage ^js js/window) "spotify/user-tracks"))]
                                      {:total (:total info)
@@ -102,26 +102,26 @@
       (case panel
         :powerhour    (let [devices (:spotify/devices db)]
                         (when (empty? devices)
-                          {:fx [[:dispatch (spotify/get-devices token)]
+                          {:fx [[:dispatch (spotify-api/get-devices token)]
                                 [:dispatch [::interval
                                             {:id        :devices
                                              :action    :start
                                              :frequency 5000
-                                             :events    [(update (spotify/get-devices token) 1 dissoc :key)]}]]
-                                [:dispatch (spotify/get-playback-state token)]
+                                             :events    [(update (spotify-api/get-devices token) 1 dissoc :key)]}]]
+                                [:dispatch (spotify-api/get-playback-state token)]
                                 [:dispatch [::interval
                                             {:id        :playback-state
                                              :action    :start
                                              :frequency 1000
-                                             :events    [(update (spotify/get-playback-state token) 1 dissoc :key)]}]]]}))
+                                             :events    [(update (spotify-api/get-playback-state token) 1 dissoc :key)]}]]]}))
         :analysis     (let [devices (:spotify/devices db)]
                         (when (empty? devices)
-                          {:fx [[:dispatch (spotify/get-playback-state token)]
+                          {:fx [[:dispatch (spotify-api/get-playback-state token)]
                                 [:dispatch [::interval
                                             {:id        :playback-state
                                              :action    :start
                                              :frequency 1000
-                                             :events    [(update (spotify/get-playback-state token) 1 dissoc :key)]}]]]}))
+                                             :events    [(update (spotify-api/get-playback-state token) 1 dissoc :key)]}]]]}))
         ;; Rather than autoloading data I wrapped the event dispatches under a button
         ;; Leave this here though, this recursive init-panel pattern is useful
         #_#_:playlist (let [playlists (:spotify/user-playlists db)
@@ -131,10 +131,10 @@
                         (some->>
                           (cond-> []
                             (empty? playlists)
-                            (conj [:dispatch (spotify/get-users-playlists :playlists-request token)])
+                            (conj [:dispatch (spotify-api/get-users-playlists :playlists-request token)])
                             (empty? tracks)
                             (conj [:dispatch (let [get-users-tracks
-                                                   (spotify/get-users-tracks :tracks-request token
+                                                   (spotify-api/get-users-tracks :tracks-request token
                                                                              (if (:debug? db)
                                                                                config/debug-track-limit
                                                                                false))
@@ -150,7 +150,7 @@
                                                                 (comp f update-fx)
                                                                 f)))))])
                             (and (empty? artists) (not-empty tracks) (not= (:tracks-request db) :loading))
-                            (conj [:dispatch (spotify/get-artists token (spotify/track-artists-set tracks))]))
+                            (conj [:dispatch (spotify-api/get-artists token (spotify-api/track-artists-set tracks))]))
                           not-empty
                           (assoc {} :fx)))
         nil))))
@@ -265,7 +265,7 @@
 
 ;; Events dispatched by changing subscriptions
 ;; (I'm not sold on this pattern yet, but I chose it
-;; rather than hoping than managing many setInterval.)
+;; rather than managing many setInterval.)
 ;; Regardless, the implementation is very simple and
 ;; boils down to `reagent.ratom/track!`.
 ;; See: https://github.com/den1k/re-frame-utils/blob/master/src/vimsical/re_frame/fx/track.cljc#L68
