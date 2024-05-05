@@ -25,3 +25,9 @@
   ::mobile?
   (fn [db [_]]
     (= :mobile (:window/breakpoint db))))
+
+(rf/reg-sub
+  ::valid?
+  (fn [db [_]]
+    ;; TODO use malli to validate the db, an error boundary component can subscribe to this
+    true))

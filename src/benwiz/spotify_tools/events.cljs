@@ -135,9 +135,9 @@
                             (empty? tracks)
                             (conj [:dispatch (let [get-users-tracks
                                                    (spotify-api/get-users-tracks :tracks-request token
-                                                                             (if (:debug? db)
-                                                                               config/debug-track-limit
-                                                                               false))
+                                                                                 (if (:debug? db)
+                                                                                   config/debug-track-limit
+                                                                                   false))
                                                    options (second get-users-tracks)]
                                                (update-in get-users-tracks [1 :update-fx]
                                                           (fn [update-fx]
@@ -213,9 +213,9 @@
       {:fx [[:dispatch [::success-http-result options result]]]}
       (= 429 status) ;; TODO I can't find the retry-after header, so just waiting one second
       (do
-        (js/console.log "Received a 429, retrying for reattempt number" (inc (:attempts options)))
-        {:fx [[:dispatch-later {:ms 1000 :dispatch [::http-request (update options :attempts inc)]}]]})
-      :else
+        (js/console.log "Received a 429, retrying for reattempt number" (inc (:attempts options))) ;; TODO I should probably look at how long I'm supposed to wait, theres a retry-after (seconds) header
+        {:fx [[:dispatch-later {:ms 1000 :dispatch [::http-request (update options :attempts inc)]}]]}
+        :else)
       (do
         (cljs.pprint/pprint {::failure-http-result result
                              :method               method

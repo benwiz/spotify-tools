@@ -182,6 +182,34 @@
     :update-db (fn [db result]
                  (assoc db :spotify/devices (:devices result)))}])
 
+(defn get-audio-features [key token ids]
+  [:benwiz.spotify-tools.events/http-request
+   {:key       key
+    :method    :get
+    :uri       (str "https://api.spotify.com/v1/audio-features?ids="
+                    (str/join "," ids))
+    :headers   {:Authorization (str "Bearer " (:access-token token))}
+    :update-db (fn [db result]
+                 (-> db
+                     (update :spotify/audio-features
+                                (fn [{:keys [items total]}]
+                                  (let [updated-items
+                                        (into (or items {})
+                                              (map (juxt :id identity))
+                                              (:audio_features result))]
+                                    {:items updated-items})))))
+    #_#_:next      (if limit
+                 (fn [options result]
+                   (when-some [uri (:next result)]
+                     (when (some-> (.. (js/URL. uri) -searchParams (get "offset"))
+                                   not-empty
+                                   js/parseInt
+                                   (< limit))
+                       (assoc options :uri uri))))
+                 (fn [options result]
+                   (when-some [uri (:next result)]
+                     (assoc options :uri uri))))}])
+
 (defn get-playback-state [token]
   [:benwiz.spotify-tools.events/http-request
    {:key       :get-playback-state
@@ -242,8 +270,7 @@
                      (update-in [:spotify/user-playlists :items] dissoc id)
                      (update-in [:spotify/user-playlists :total] dec)))}])
 
-(defn download-user-data [token debug?]
-  (rf/dispatch (get-users-playlists :playlists-request token))
+(defn download-user-tracks [token debug?]
   (rf/dispatch
     (let [get-users-tracks
           (get-users-tracks :tracks-request token
@@ -256,6 +283,7 @@
                    (let [f (fn [fx result db]
                              ;; when completely done
                              (when (nil? ((:next options) options result))
+                               ;; TODO always downloading this extra data is not what we want, they aren't used together. It'd be better to signal "done" somehow and have these be requestable if the data is ready.
                                (into (or fx [])
                                      [[:dispatch
                                        [:benwiz.spotify-tools.events/db-aware-event
@@ -263,10 +291,27 @@
                                           (when (and (empty? (:spotify/user-artists db))
                                                      (not-empty (:spotify/user-tracks db))
                                                      (not= (:tracks-request db) :loading))
-                                            {:fx [[:dispatch (get-artists token (track-artists-set (:spotify/user-tracks db)))]]}))]]])))]
+                                            {:fx [[:dispatch (get-artists token (track-artists-set (:spotify/user-tracks db)))]]}))]]
+                                      [:dispatch
+                                       [:benwiz.spotify-tools.events/db-aware-event
+                                        (fn [db]
+                                          (when (and (empty? (:spotify/track-features db))
+                                                     (not-empty (:spotify/user-tracks db))
+                                                     (not= (:features-request db) :loading))
+                                            {:fx (into []
+                                                       (comp
+                                                         (partition-all 100)
+                                                         (map (fn [tracks]
+                                                                [:dispatch (get-audio-features :audio-features-request token
+                                                                                               (into [] (map (comp :id :track)) tracks))])))
+                                                       (:items (:spotify/user-tracks db)))}))]]])))]
                      (if update-fx
                        (comp f update-fx)
                        f)))))))
+
+(defn download-user-data [token debug?]
+  (rf/dispatch (get-users-playlists :playlists-request token))
+  (download-user-tracks token debug?))
 
 (defn search [token term]
   [:benwiz.spotify-tools.events/http-request

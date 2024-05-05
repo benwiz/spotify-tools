@@ -21,8 +21,9 @@ I think eventually I can include a Java 11 binary for shadow-cljs to use which w
 
 ## To Do
 
-- rename everything
+- rename project
 - permanently show Currently Playing card... generalize the card from Analysis
+- permanently show downloaded data somewhere
 - use generalized card in Power Hour
 - cache downloaded data... maybe re-frame offers a way to do this with the db or maybe just have to write to LocalStorage directly
 
